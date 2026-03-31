@@ -60,7 +60,14 @@ func (r *BatchRepo) Update(id int, batch *model.Batch) error {
 }
 
 func (r *BatchRepo) UpdateActiveStatus(id int, isActive bool) error {
-	return r.db.Model(&model.Batch{}).Where("id = ?", id).Update("is_active", isActive).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if isActive {
+			if err := tx.Model(&model.Batch{}).Where("id != ?", id).Update("is_active", false).Error; err != nil {
+				return err
+			}
+		}
+		return tx.Model(&model.Batch{}).Where("id = ?", id).Update("is_active", isActive).Error
+	})
 }
 
 func (r *BatchRepo) Delete(id int) error {

@@ -51,7 +51,7 @@ func main() {
 	// --- CORS SETUP HERE ---
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{os.Getenv("CORS_ALLOWED_ORIGINS")},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -133,20 +133,21 @@ func RunServer(router *gin.Engine, conn *gorm.DB) *gin.Engine {
 		member.GET("/:id", apiHandler.MemberAPIHandler.GetMemberByID)
 		member.GET("/nim/:nim", apiHandler.MemberAPIHandler.GetMemberByNim)
 		member.PUT("/:id", apiHandler.MemberAPIHandler.Update)
-		member.PATCH("/:id/status", apiHandler.MemberAPIHandler.UpdateStatus)
+		member.PUT("/:id/status", apiHandler.MemberAPIHandler.UpdateStatus)
 		member.GET("/trend", apiHandler.MemberAPIHandler.GetRegistrationTrend)
 		member.DELETE("/:id", apiHandler.MemberAPIHandler.Delete)
 	}
 
 	batch := apiV1.Group("/batch")
 	{
+		batch.GET("/active", apiHandler.BatchAPIHandler.GetActiveBatch)
+
 		batch.Use(middleware.Auth())
 		batch.POST("/create", apiHandler.BatchAPIHandler.CreateBatch)
 		batch.GET("/all", apiHandler.BatchAPIHandler.GetAllBatch)
 		batch.GET("/:id", apiHandler.BatchAPIHandler.GetBatchByID)
-		batch.GET("/active", apiHandler.BatchAPIHandler.GetActiveBatch)
 		batch.PUT("/:id", apiHandler.BatchAPIHandler.Update)
-		batch.PATCH("/:id/active", apiHandler.BatchAPIHandler.UpdateActiveStatus)
+		batch.PUT("/:id/active", apiHandler.BatchAPIHandler.UpdateActiveStatus)
 		batch.DELETE("/:id", apiHandler.BatchAPIHandler.Delete)
 	}
 

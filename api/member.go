@@ -52,21 +52,20 @@ func (m *memberAPI) CreateMember(c *gin.Context) {
 	if motivation := c.PostForm("motivation"); motivation != "" {
 		req.Motivation = &motivation
 	}
-	if batchIDStr := c.PostForm("batch_id"); batchIDStr != "" {
-		batchID, err := strconv.Atoi(batchIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, model.ErrorResponse{
-				Success: false,
-				Status:  http.StatusBadRequest,
-				Message: "Validation failed",
-				Errors: map[string]string{
-					"batch_id": "Invalid batch ID",
-				},
-			})
-			return
-		}
-		req.BatchId = &batchID
+	// Validate active batch exists
+	activeBatch, err := m.batchService.GetActiveBatch()
+	if err != nil || activeBatch == nil {
+		c.JSON(http.StatusForbidden, model.ErrorResponse{
+			Success: false,
+			Status:  http.StatusForbidden,
+			Message: "Registration is closed",
+			Errors: map[string]string{
+				"batch": "No active batch is currently available for registration",
+			},
+		})
+		return
 	}
+	req.BatchId = &activeBatch.ID
 
 	// Validate required fields
 	if req.FullName == "" || req.Nim == "" || req.PhoneNumber == "" {
