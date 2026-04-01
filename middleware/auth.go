@@ -10,30 +10,31 @@ import (
 
 func Auth() gin.HandlerFunc {
 	return gin.HandlerFunc(func(ctx *gin.Context) {
-		cookie, err := ctx.Cookie("session_token")
-		if err != nil {
-			// if ctx.GetHeader("Content-Type") == "application/json" {
-			// 	ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-			// } else {
-			// 	ctx.Redirect(http.StatusSeeOther, "/login")
-			// }
-			// ctx.Abort()
-			// return
+		// Try Authorization header first (Bearer token), then fall back to cookie
+		var tokenString string
 
-			ctx.JSON(http.StatusUnauthorized, model.ErrorResponse{
-				Success: false,
-				Status:  http.StatusUnauthorized,
-				Message: "Error from auth middleware",
-				Errors: map[string]string{
-					"error": "unauthorized",
-				},
-			})
-			ctx.Abort()
-			return
+		authHeader := ctx.GetHeader("Authorization")
+		if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+			tokenString = authHeader[7:]
+		} else {
+			cookie, err := ctx.Cookie("session_token")
+			if err != nil {
+				ctx.JSON(http.StatusUnauthorized, model.ErrorResponse{
+					Success: false,
+					Status:  http.StatusUnauthorized,
+					Message: "Error from auth middleware",
+					Errors: map[string]string{
+						"error": "unauthorized",
+					},
+				})
+				ctx.Abort()
+				return
+			}
+			tokenString = cookie
 		}
 
 		claims := &model.Claims{}
-		token, err := jwt.ParseWithClaims(cookie, claims, func(t *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			return model.JwtKey, nil
 		})
 		if err != nil {
