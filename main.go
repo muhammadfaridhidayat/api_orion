@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"api_orion/api"
@@ -49,13 +50,17 @@ func main() {
 	router.Use(gin.Recovery())
 
 	// --- CORS SETUP HERE ---
+	origins := strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
+	}
+
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{os.Getenv("CORS_ALLOWED_ORIGINS")},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+		AllowOrigins:  origins,
+		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+		MaxAge:        12 * time.Hour,
 	}))
 	// --- END CORS ---
 
