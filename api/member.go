@@ -3,15 +3,10 @@ package api
 import (
 	"api_orion/model"
 	"api_orion/service"
-	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type MemberAPI interface {
@@ -37,7 +32,7 @@ func NewMemberAPI(memberService service.MemberService, batchService service.Batc
 func (m *memberAPI) CreateMember(c *gin.Context) {
 	var req model.NewMember
 
-	// Parse text fields from multipart form
+	// Parse text fields from form
 	req.FullName = c.PostForm("full_name")
 	req.Nim = c.PostForm("nim")
 	req.PhoneNumber = c.PostForm("phone_number")
@@ -52,6 +47,12 @@ func (m *memberAPI) CreateMember(c *gin.Context) {
 	if motivation := c.PostForm("motivation"); motivation != "" {
 		req.Motivation = &motivation
 	}
+
+	// Read Cloudinary URL from form field
+	if payment := c.PostForm("payment"); payment != "" {
+		req.Payment = &payment
+	}
+
 	// Validate active batch exists
 	activeBatch, err := m.batchService.GetActiveBatch()
 	if err != nil || activeBatch == nil {
@@ -80,7 +81,7 @@ func (m *memberAPI) CreateMember(c *gin.Context) {
 		return
 	}
 
-	// Check for duplicate NIM before saving the file
+	// Check for duplicate NIM
 	existingMember, _ := m.memberService.GetMemberByNim(req.Nim)
 	if existingMember != nil {
 		c.JSON(http.StatusConflict, model.ErrorResponse{
@@ -94,50 +95,7 @@ func (m *memberAPI) CreateMember(c *gin.Context) {
 		return
 	}
 
-	// Handle file upload for payment proof
-	var savePath string
-	file, err := c.FormFile("payment")
-	if err == nil {
-		// Ensure upload directory exists
-		uploadDir := "./uploads/payments"
-		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			c.JSON(http.StatusInternalServerError, model.ErrorResponse{
-				Success: false,
-				Status:  http.StatusInternalServerError,
-				Message: "Failed to create upload directory",
-				Errors: map[string]string{
-					"server": err.Error(),
-				},
-			})
-			return
-		}
-
-		// Generate unique filename
-		ext := strings.ToLower(filepath.Ext(file.Filename))
-		uniqueName := fmt.Sprintf("%s%s", uuid.New().String(), ext)
-		savePath = filepath.Join(uploadDir, uniqueName)
-
-		if err := c.SaveUploadedFile(file, savePath); err != nil {
-			c.JSON(http.StatusInternalServerError, model.ErrorResponse{
-				Success: false,
-				Status:  http.StatusInternalServerError,
-				Message: "Failed to save payment file",
-				Errors: map[string]string{
-					"payment": err.Error(),
-				},
-			})
-			return
-		}
-
-		paymentURL := fmt.Sprintf("/uploads/payments/%s", uniqueName)
-		req.Payment = &paymentURL
-	}
-
 	if err := m.memberService.CreateMember(&req); err != nil {
-		// Clean up uploaded file if DB insert fails
-		if savePath != "" {
-			os.Remove(savePath)
-		}
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
 			Success: false,
 			Status:  http.StatusInternalServerError,

@@ -1,2 +1,27 @@
+# Environment variables
 .env
-uploads/*
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Coverage files
+*.out
+
+# Go build directories
+/bin/
+/dist/
+
+# Vendor (optional, depending on your workflow)
+vendor/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store

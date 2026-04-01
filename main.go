@@ -59,8 +59,6 @@ func main() {
 	}))
 	// --- END CORS ---
 
-	// Serve uploaded files
-	router.Static("/uploads", "./uploads")
 
 
 	// Get DATABASE_URL
