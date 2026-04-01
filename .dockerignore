@@ -1,0 +1,35 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+api_orion
+
+# Test files
+*.test
+*.out
+
+# Build directories
+/bin/
+/dist/
+vendor/
+
+# Environment files (secrets should be injected via Dokploy)
+.env
+.env.*
+
+# Version control
+.git
+.gitignore
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml

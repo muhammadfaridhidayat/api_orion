@@ -29,9 +29,9 @@ type APIHandler struct {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	// Load .env file if it exists (optional in Docker/Dokploy where env vars are injected)
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
 	gin.SetMode(gin.ReleaseMode)
