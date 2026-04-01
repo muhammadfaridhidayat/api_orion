@@ -7,7 +7,7 @@ import (
 
 type MemberService interface {
 	CreateMember(member *model.NewMember) error
-	GetAllMember(limit int, page int, query string) ([]model.NewMember, error)
+	GetAllMember(limit int, page int, query string, batchID int) ([]model.NewMember, error)
 	GetMemberByID(id int) (*model.NewMember, error)
 	GetMemberByNim(nim string) (*model.NewMember, error)
 	Update(id int, member *model.NewMember) error
@@ -28,8 +28,8 @@ func (s *memberService) CreateMember(member *model.NewMember) error {
 	return s.memberRepo.CreateMember(member)
 }
 
-func (s *memberService) GetAllMember(limit int, page int, query string) ([]model.NewMember, error) {
-	return s.memberRepo.GetAllMember(limit, page, query)
+func (s *memberService) GetAllMember(limit int, page int, query string, batchID int) ([]model.NewMember, error) {
+	return s.memberRepo.GetAllMember(limit, page, query, batchID)
 }
 
 func (s *memberService) GetMemberByID(id int) (*model.NewMember, error) {

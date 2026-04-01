@@ -121,8 +121,9 @@ func (m *memberAPI) GetAllMember(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	query := c.Query("query")
+	batchID, _ := strconv.Atoi(c.DefaultQuery("batch_id", "0"))
 
-	members, err := m.memberService.GetAllMember(limit, page, query)
+	members, err := m.memberService.GetAllMember(limit, page, query, batchID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
 			Success: false,

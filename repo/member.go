@@ -8,7 +8,7 @@ import (
 
 type MemberRepository interface {
 	CreateMember(member *model.NewMember) error
-	GetAllMember(limit int, page int, query string) ([]model.NewMember, error)
+	GetAllMember(limit int, page int, query string, batchID int) ([]model.NewMember, error)
 	GetMemberByID(id int) (*model.NewMember, error)
 	GetMemberByNim(nim string) (*model.NewMember, error)
 	Update(id int, member *model.NewMember) error
@@ -29,14 +29,18 @@ func (r *MemberRepo) CreateMember(member *model.NewMember) error {
 	return r.db.Create(member).Error
 }
 
-func (r *MemberRepo) GetAllMember(limit int, page int, query string) ([]model.NewMember, error) {
+func (r *MemberRepo) GetAllMember(limit int, page int, query string, batchID int) ([]model.NewMember, error) {
 	var members []model.NewMember
 	offset := (page - 1) * limit
 
 	db := r.db
 
+	if batchID > 0 {
+		db = db.Where("batch_id = ?", batchID)
+	}
+
 	if query != "" {
-		db = db.Where("full_name LIKE ?", "%"+query+"%")
+		db = db.Where("full_name ILIKE ?", "%"+query+"%")
 	}
 
 	err := db.Limit(limit).Offset(offset).Find(&members).Error
