@@ -64,8 +64,6 @@ func main() {
 	}))
 	// --- END CORS ---
 
-
-
 	// Get DATABASE_URL
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
@@ -119,7 +117,7 @@ func RunServer(router *gin.Engine, conn *gorm.DB) *gin.Engine {
 
 	user := apiV1.Group("/user")
 	{
-		user.POST("/register", apiHandler.UserAPIHandler.Register)
+		// user.POST("/register", apiHandler.UserAPIHandler.Register)
 		user.POST("/login", apiHandler.UserAPIHandler.Login)
 		user.POST("/logout", apiHandler.UserAPIHandler.Logout)
 
